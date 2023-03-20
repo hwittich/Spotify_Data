@@ -1,0 +1,71 @@
+---
+title: "Getting Started"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+On September 22, 2022, I submitted a service request to Spotify to gain access to my extended listening history. On October 4, 2022, a link to download the data was provided to me. All of the files I received from Spotify can be found in the Data folder. There is a lot of data to dig through, spread across multiple files. Here, I will summarize my thoughts on the data I have and the types of questions I want to try and answer through analyzing the data.
+
+## Data Overview
+The streaming history datafiles are explained in the README file, ReadMeFirst_ExtendedStreamingHistory.pdf. 
+It looks like all of my streaming data is split across 13 json files tiles endsong_#.json
+
+For every song I have ever streamed, here is the data Spotify has collected on it, along with any ideas I have for analysis:   
+ts -- timestamp indicating when the track stopped playing in coordinated universal time. The order is year, month, and day followed by a timestamp in military time   
+* What are my listening hours?   
+* Difference between morning songs and evening songs?   
+ms_played -- this field is the number of milliseconds the stream was played   
+* Calculate total amount of time spent listening to songs in lifetime   
+master_metadata_track_name -- name of the track   
+master_metadata_album_artist_name -- name of the artist or band   
+master_metadata_album_album_name -- name of the album of the track   
+reason_start -- value telling why the track started (e.g. "trackdone")   
+reason_end -- value telling why the track ended (e.g. "endplay")   
+* No-skip albums? Which are the albums that I skip tracks the least?   
+shuffle -- value True or False depending on if shuffle mode was used   
+skipped -- indicates if the user skipped to the next song   
+offline -- indicates whether track was played in offline mode or not   
+offline_timestamp - timestamp of when offline mode was used, if used   
+
+There are also some technical files that might be interesting to look into:   
+Ap_Share -- contains information about when the user shares Spotify content (for example, albums, playists, artists, tracks, etc.)   
+InteractivePredictRequest - real time interactive session features for radio. Used to train a model for interactive radio session ranking.   
+PlaylistCreated - contains information about when the user creates a playlist   
+* How many playlists do I make a day?   
+ExternalAccessoryRemoteInteraction -- remote interaction performaed with an external accessory connected to the SPotify app. Examples are other apps, headphones, bluetooth speakers, and cars   
+* Favorite way to listen to music? headphones, driving, speakers   
+* Different songs for different devices? E.g. favorite car song?   
+RemovedFromRootlist -- This event is logged when a user removes an item from their rootlist (list of playlists).   
+RootlistCreated -- This event is logged when the first playlist is added to a user's rootlist (list of playlists).   
+ScrollTrackCredits -- This event is emitted when the user interacts with the credits page of a track.   
+ListenAlikeComparison -- This event contains information about when a user asked to compare themselves when they selected to match themselves in Listen.   
+AddedToPlaylist -- This file contains records about each time a user adds a track to a playlist.   
+
+## Questions for Analysis
+Song turnover rate? How many days/weeks do I spend listening to a song on repeat before I get sick of listening to it?
+Top songs chart over time?
+Bring in track features and analyze things like tempo,  danceability, acousticness, loudness
+https://developer.spotify.com/documentation/web-api/reference/#/operations/get-audio-analysis
+Songs over Seasons
+Artist Discovery? When did I first listen to my top artists?
+Slow burns versus instant classics?
+
+## Prepping Data for Analysis
+Before conducting any analyses, I first want to convert my streaming data from multiple JSON files into one text file that I can read into Rstudio. First, I will run a small script to convert every endsong_#.json file into an endsong_#.csv file:
+```{}
+python3 code/JSON_to_csv.py
+```
+Now let's concatenate all of these files.
+```{}
+awk '(NR == 1) || (FNR > 1)' data/endsong_*.csv > data/full_streaming_history.csv
+```
+Let's look at the data:
+```{r}
+library(data.table)
+streaming_data <- fread("../data/full_streaming_history.csv")
+```
+

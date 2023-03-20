@@ -1,0 +1,53 @@
+---
+title: "Getting a Feel for the Data"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Let's take a few different looks at the data
+```{r}
+library(data.table)
+library(dplyr)
+streaming_data <- fread("../data/full_streaming_history.csv")
+```
+
+
+# What was the first song I listened to in full?
+```{r}
+not_skipped_songs <- streaming_data %>% filter(reason_end=="trackdone")
+first_songs <- not_skipped_songs[order(ts),]
+head(first_songs)
+```
+Habits (Stay High) - Tove Lo
+
+# Most Listened to __
+Song?
+```{r}
+song_counts <- as.data.frame(table(not_skipped_songs$master_metadata_track_name))
+top_songs <- song_counts[order(-song_counts$Freq),]
+head(top_songs)
+```
+Artist?
+```{r}
+artist_counts <- as.data.frame(table(not_skipped_songs$master_metadata_album_artist_name))
+top_artists <- artist_counts[order(-artist_counts$Freq),]
+head(top_artists)
+```
+Album?
+```{r}
+album_counts <- as.data.frame(table(not_skipped_songs$master_metadata_album_album_name))
+top_albums <- album_counts[order(-album_counts$Freq),]
+head(top_albums)
+```
+
+# Most Skipped Song?
+```{r}
+skipped_songs <- streaming_data %>% filter(reason_end=="fwdbtn")
+song_counts <- as.data.frame(table(skipped_songs$master_metadata_track_name))
+top_songs <- song_counts[order(-song_counts$Freq),]
+head(top_songs)
+```
+Wow

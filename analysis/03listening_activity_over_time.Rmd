@@ -1,0 +1,31 @@
+---
+title: "Listening Over Time"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+So I have been using spotify since 2014. That means I have 8 years of listening data to look into.
+
+```{r}
+library(data.table)
+library(dplyr)
+streaming_data <- fread("../data/full_streaming_history.csv")
+```
+
+# Streams Per Day
+I want to create a histogram of how many songs I streamed every day. First step is to filter out songs that I didn't listen to in full. 
+```{r}
+not_skipped_songs <- streaming_data %>% filter(reason_end=="trackdone")
+```
+Then, for each day, I want to generate a count of how many songs I listened to. 
+```{r}
+#timestamp is stored in POSIXct format
+#extract day from POSIXct class with format() function
+not_skipped_songs <- not_skipped_songs %>% mutate(date = format(ts, "%Y-%m-%d"))
+streamsPerDay <- as.data.frame(table(not_skipped_songs$date), stringsAsFactors=F)
+
+
+```
